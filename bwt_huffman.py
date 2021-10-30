@@ -23,13 +23,40 @@ class node:
 
         self.right = right
     
-    def find(self, cha, node):
+    def find(self, cha):
+        st = ""
         if(node.symbol != cha):
             if ((node.left != None) & (node.right != None)):
-                l = self.find(cha, node.left)
-                r = self.find(cha, node.right)
+
+                #if not none, go to left and right
+                l = self.find(node.left, cha)
+                r = self.find(node.right, cha)
+                if (l != None):
+                    st += l
+                    st += node.huff
+                    return st
+                else:
+                    st += r
+                    st += node.huff
+                    return st
+            
+            #if right is not none
             elif (node.right != None):
-                return None
+                st += self.find(node.right, cha)
+                st += node.huff
+                return st
+            
+            #if left is not none
+            elif (node.left != None):
+                st += self.find(node.left, cha)
+                st += node.huff
+                return st
+
+            #else return none
+            else:
+                return node.left
+        else:
+            return node.huff
 #Order is
 #BWT, MTF, Huff, Compress
 
@@ -67,7 +94,7 @@ def encode(msg):
     S = ""
 
     for c in msg:
-        if
+        S += nodes[0].find(nodes[0], c)
 
     raise NotImplementedError
 
