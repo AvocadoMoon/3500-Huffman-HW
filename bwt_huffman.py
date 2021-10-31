@@ -26,39 +26,20 @@ class node:
         self.huff = ""
     
     def findHuff(self, cha):
-        st = ""
-        if(self.symbol != cha):
-            if ((self.left != None) & (self.right != None)):
+        currentNode = self
+        huff = ""
 
-                #if not none, go to left and right
-                l = self.left.findHuff(cha)
-                r = self.right.findHuff(cha)
-                if (l != None):
-                    st += str(l)
-                    st += str(self.huff)
-                    return st
-                elif(r != None):
-                    st += str(r)
-                    st += str(self.huff)
-                    return st
-            
-            #if right is not none
-            elif (self.right != None):
-                st += str(self.right.findHuff(cha))
-                st += str(self.huff)
-                return st
-            
-            #if left is not none
-            elif (self.left != None):
-                st += str(self.left.findHuff(cha))
-                st += str(self.huff)
-                return st
-
-            #else return none
+        while(1):
+            if ((currentNode.left.symbol == cha)):
+                huff += str(currentNode.left.huff)
+                return huff
+            elif (currentNode.right.symbol == cha):
+                huff += str(currentNode.right.huff)
+                return huff
             else:
-                return self.left
-        else:
-            return self.huff
+                currentNode = currentNode.left
+                huff += str(currentNode.huff)
+        
     
     def findSymbol(self, c):
         i = 0
@@ -76,8 +57,9 @@ class node:
             if((substring == huff) & (currentNode.left.symbol != None)):
                 return huff, currentNode.left.symbol
             if (currentNode.right != None):
-                r = huff + str(currentNode.right.huff)
-            if ((substring + c[i + 1]) == r):
+                r = huff[:-1]
+                r += "1"
+            if (substring == r):
                 return r, currentNode.right.symbol
             else:
                 currentNode = currentNode.left
@@ -122,7 +104,7 @@ def encode(msg):
     S = ""
 
     for c in msg:
-        S += nodes[0].findHuff(c).reverse()
+        S += nodes[0].findHuff(c)
     
     #S = bytearray(S.encode())
     return S, nodes[0]
