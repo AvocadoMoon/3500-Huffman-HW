@@ -22,41 +22,68 @@ class node:
         self.left = left
 
         self.right = right
+
+        self.huff = ""
     
-    def find(self, cha):
+    def findHuff(self, cha):
         st = ""
-        if(node.symbol != cha):
-            if ((node.left != None) & (node.right != None)):
+        if(self.symbol != cha):
+            if ((self.left != None) & (self.right != None)):
 
                 #if not none, go to left and right
-                l = self.find(node.left, cha)
-                r = self.find(node.right, cha)
+                l = self.left.findHuff(cha)
+                r = self.right.findHuff(cha)
                 if (l != None):
-                    st += l
-                    st += node.huff
+                    st += str(l)
+                    st += str(self.huff)
                     return st
-                else:
-                    st += r
-                    st += node.huff
+                elif(r != None):
+                    st += str(r)
+                    st += str(self.huff)
                     return st
             
             #if right is not none
-            elif (node.right != None):
-                st += self.find(node.right, cha)
-                st += node.huff
+            elif (self.right != None):
+                st += str(self.right.findHuff(cha))
+                st += str(self.huff)
                 return st
             
             #if left is not none
-            elif (node.left != None):
-                st += self.find(node.left, cha)
-                st += node.huff
+            elif (self.left != None):
+                st += str(self.left.findHuff(cha))
+                st += str(self.huff)
                 return st
 
             #else return none
             else:
-                return node.left
+                return self.left
         else:
-            return node.huff
+            return self.huff
+    
+    def findSymbol(self, c):
+        i = 0
+        substring = c[i]
+        currentNode = self
+
+        if(self.right != None):
+            if(str(self.right.huff) == substring):
+                huff = str(self.right.huff)
+                return huff, self.right.symbol
+        
+        huff = str(self.left.huff)
+        
+        while (1):
+            if((substring == huff) & (currentNode.left.symbol != None)):
+                return huff, currentNode.left.symbol
+            if (currentNode.right != None):
+                r = huff + str(currentNode.right.huff)
+            if ((substring + c[i + 1]) == r):
+                return r, currentNode.right.symbol
+            else:
+                currentNode = currentNode.left
+                huff += str(currentNode.huff)
+                i += 1
+                substring += c[i]
 #Order is
 #BWT, MTF, Huff, Compress
 
@@ -74,6 +101,7 @@ def encode(msg):
 
     nodes = []
     for c in range(256):
+        
         n = msg.count(c)
         if (n != 0):
             nodes.append(node(n, c))
@@ -87,42 +115,52 @@ def encode(msg):
         left.huff = 0
         right.huff = 1
 
-        newNode = node(left.freq+right.freq, left.symbol+right.symbol, left, right)
+        newNode = node(left.freq+right.freq, None, left, right)
 
         nodes.append(newNode)
     
     S = ""
 
     for c in msg:
-        S += nodes[0].find(nodes[0], c)
-
-    raise NotImplementedError
+        S += nodes[0].findHuff(c).reverse()
+    
+    #S = bytearray(S.encode())
+    return S, nodes[0]
 
 # This takes a string, cmsg, which must contain only 0s and 1s, and your 
 # representation of the ``decoder ring'' ring, and returns a bytearray msg which 
 # is the decompressed message. 
 def decode(cmsg, decoderRing):
     # Creates an array with the appropriate type so that the message can be decoded.
+
+    #keeps on looking in tree for code that works with current string, if none add length of search string by 1 and traverse down
+    #huffman tree by 1. Once found remove serach string section from begining of string and start over
     byteMsg = bytearray()
+
+    while len(cmsg) != 0:
+        
+        substring, byte = decoderRing.findSymbol(cmsg)
+
+        byteMsg.append(byte)
+        cmsg = cmsg[len(substring): ]
+
     
-    raise NotImplementedError
+    return byteMsg
 
 # This takes a sequence of bytes over which you can iterate, msg, and returns a tuple (compressed, ring) 
 # in which compressed is a bytearray (containing the Huffman-coded message in binary, 
 # and ring is again the ``decoder ring'' needed to decompress the message.
 def compress(msg, useBWT):
     #take the binary msg and convert it into a byte array
-    #bwt may use just binary or byte array, depending on which determines whether conversion is before or after BWT
 
     if useBWT:
         msg = bwt(msg)
         msg = mtf(msg)
 
     # Initializes an array to hold the compressed message.
-    compressed = bytearray()
     enc, huff = encode(msg)
     
-    raise NotImplementedError
+    return enc, huff
 
 # This takes a sequence of bytes over which you can iterate containing the Huffman-coded message, and the 
 # decoder ring needed to decompress it.  It returns the bytearray which is the decompressed message. 
@@ -221,6 +259,15 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
+    s = "hello"
+    f = bytearray(s.encode())
+    t = bwt(f)
+    q = mtf(t)
+    e, ring = encode(q)
+    i = imtf(mtf(f))
+    d = decode(e, ring)
+
+
 
     # argparse is an excellent library for parsing arguments to a python program
     parser = argparse.ArgumentParser(description='<Insert a cool name for your compression algorithm> compresses '
