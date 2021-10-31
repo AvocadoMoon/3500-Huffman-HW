@@ -157,11 +157,22 @@ def decompress(msg, decoderRing, useBWT):
         decompressedMsg = imtf(decompressedMsg)
         decompressedMsg = ibwt(decompressedMsg)
 
-    raise NotImplementedError
+    return decompressedMsg
 
 # memory efficient iBWT
 def ibwt(msg):
     # I would work with a bytearray to store the IBWT output
+    i = bytearray.index(termchar)
+    c = bytearray()
+
+    rotations = ['' for c in msg]
+    for j in range(len(msg)):
+        #insert the BWT as the first column
+        rotations = sorted([c+rotations[i] for i, c in enumerate(msg)])
+    #return the row ending in ‘$’
+    return rotations[msg.index(termchar)]
+
+
     raise NotImplementedError
 
 
