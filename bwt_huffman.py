@@ -119,6 +119,8 @@ def decode(cmsg, decoderRing):
     #huffman tree by 1. Once found remove serach string section from begining of string and start over
     byteMsg = bytearray()
 
+    if(type(cmsg) != type("")):
+        cmsg.decode()
     while len(cmsg) != 0:
         
         substring, byte = decoderRing.findSymbol(cmsg)
@@ -148,8 +150,7 @@ def compress(msg, useBWT):
 # decoder ring needed to decompress it.  It returns the bytearray which is the decompressed message. 
 def decompress(msg, decoderRing, useBWT):
     # Creates an array with the appropriate type so that the message can be decoded.
-    byteArray = bytearray(msg)
-    decompressedMsg = decode(byteArray, decoderRing)
+    decompressedMsg = decode(msg, decoderRing)
     
     # before you return, you must invert the move-to-front and BWT if applicable
     # here, decompressed message should be the return value from decode()
@@ -162,19 +163,19 @@ def decompress(msg, decoderRing, useBWT):
 # memory efficient iBWT
 def ibwt(msg):
     # I would work with a bytearray to store the IBWT output
-    i = bytearray.index(termchar)
-    c = bytearray()
+    i = msg.index(termchar)
+    msg = msg.decode()
 
     rotations = ['' for c in msg]
     for j in range(len(msg)):
         #insert the BWT as the first column
         rotations = sorted([c+rotations[i] for i, c in enumerate(msg)])
     #return the row ending in ‘$’
-    return rotations[msg.index(termchar)]
-
-
-    raise NotImplementedError
-
+    s = termchar.to_bytes(1, byteorder='big').decode()
+    msg = rotations[msg.index(s)]
+    msg = msg[:-1]
+    msg = bytearray(msg.encode())
+    return msg
 
 # Burrows-Wheeler Transform fncs
 def radix_sort(values, key, step=0):
@@ -252,13 +253,13 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    s = "hello"
-    f = bytearray(s.encode())
-    t = bwt(f)
-    q = mtf(t)
-    e, ring = encode(q)
-    i = imtf(mtf(f))
-    d = decode(e, ring)
+    # s = "hello"
+    # f = bytearray(s.encode())
+    # t = bwt(f)
+    # q = mtf(t)
+    # e, ring = encode(q)
+    # i = imtf(mtf(f))
+    # d = decode(e, ring)
 
 
 
