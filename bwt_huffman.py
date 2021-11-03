@@ -38,18 +38,18 @@ def encode(msg):
     #make huffman tree out of probability
     #then encode message in binary using huffman tree
     def findHuff(currentNode, cha):
-        huff = 0
-
+        #huff = 0
+        huff = ""
         while(1):
             if ((currentNode.left.symbol == cha)):
-                huff = huff << 1
+                huff += "0"
                 return huff
             elif (currentNode.right.symbol == cha):
-                huff = (huff << 1) | 0x01
+                huff += "1"
                 return huff
             else:
                 currentNode = currentNode.left
-                huff = huff << 1
+                huff += "0"
 
 
     nodes = []
@@ -72,11 +72,11 @@ def encode(msg):
 
         nodes.append(newNode)
     
-    S = bytearray()
+    S = ""
 
     for c in msg:
         j = findHuff(nodes[0], c)
-        S.append(j)
+        S += j
     
     return S, nodes[0]
 
@@ -139,8 +139,24 @@ def compress(msg, useBWT):
 
     # Initializes an array to hold the compressed message.
     enc, huff = encode(msg)
+
+    enc_n = len(enc)
+    n = 0
+    while ((enc_n % 8) != 0):
+        enc_n += 1
+        n += 1
+        enc += "0"
+
+    b = int(enc, 2)
+    print(b%1000)
+    b = b.to_bytes(enc_n // 8, "big")
+    #print(b)
+    b = iter(b)
+    print(b)
+    b = bytearray().extend(b)
+    print(b)
     
-    return enc, huff
+    return b, huff
 
 # This takes a sequence of bytes over which you can iterate containing the Huffman-coded message, and the 
 # decoder ring needed to decompress it.  It returns the bytearray which is the decompressed message. 
@@ -249,13 +265,13 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    # s = "hello"
-    # f = bytearray(s.encode())
-    # t = bwt(f)
-    # q = mtf(t)
-    # e, ring = encode(q)
-    # i = imtf(mtf(f))
-    # d = decode(e, ring)
+    s = "hello"
+    f = bytearray(s.encode())
+    t = bwt(f)
+    q = mtf(t)
+    e, ring = encode(q)
+    i = imtf(mtf(f))
+    d = decode(e, ring)
 
 
 
