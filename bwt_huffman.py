@@ -101,10 +101,27 @@ def encode(msg):
 
         nodes.append(newNode)
     
-    S = ""
-
+    S = bytearray()
+    byte_size = 8
+    current = ""
     for c in msg:
-        S += nodes[0].findHuff(c)
+        j = nodes[0].findHuff(c)
+        while(len(j) != 0):
+            while(len(current) != byte_size and len(j) != 0):
+                current += j[0]
+                j = j[1:]
+            if (len(current) == byte_size):
+                S.append(int(current, 2))
+                current = ""
+    n = len(current) % 8
+    n = abs(8 - n)
+    print(n)
+    current += ("0" * n)
+    if (len(current) != 0):
+        S.append(int(current, 2))
+    n = ord(str(n))
+    S.append(n)
+    
     
     #S = bytearray(S.encode())
     return S, nodes[0]
@@ -119,8 +136,6 @@ def decode(cmsg, decoderRing):
     #huffman tree by 1. Once found remove serach string section from begining of string and start over
     byteMsg = bytearray()
 
-    if(type(cmsg) != type("")):
-        cmsg.decode()
     while len(cmsg) != 0:
         
         substring, byte = decoderRing.findSymbol(cmsg)
@@ -142,15 +157,21 @@ def compress(msg, useBWT):
         msg = mtf(msg)
 
     # Initializes an array to hold the compressed message.
-    enc, huff = encode(msg)
-    
+    enc, huff = encode(msg)    
     return enc, huff
 
 # This takes a sequence of bytes over which you can iterate containing the Huffman-coded message, and the 
 # decoder ring needed to decompress it.  It returns the bytearray which is the decompressed message. 
 def decompress(msg, decoderRing, useBWT):
     # Creates an array with the appropriate type so that the message can be decoded.
-    decompressedMsg = decode(msg, decoderRing)
+    S = "".join(format(x, '08b') for x in msg)
+    n = S[-8:]
+    n = int(n, 2)
+    n = chr(n)
+    n = int(n)
+    print(n)
+    S = S[: len(S) -8 -n]
+    decompressedMsg = decode(S, decoderRing)
     
     # before you return, you must invert the move-to-front and BWT if applicable
     # here, decompressed message should be the return value from decode()
