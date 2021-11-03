@@ -38,18 +38,17 @@ def encode(msg):
     #make huffman tree out of probability
     #then encode message in binary using huffman tree
     def findHuff(currentNode, cha):
-        #huff = 0
         huff = ""
         while(1):
             if ((currentNode.left.symbol == cha)):
-                huff += "0"
+                huff += str(currentNode.left.huff)
                 return huff
             elif (currentNode.right.symbol == cha):
-                huff += "1"
+                huff += str(currentNode.right.huff)
                 return huff
             else:
                 currentNode = currentNode.left
-                huff += "0"
+                huff += str(currentNode.huff)
 
 
     nodes = []
@@ -72,22 +71,23 @@ def encode(msg):
 
         nodes.append(newNode)
     
+    S = bytearray()
     current = ""
     for c in msg:
         j = findHuff(nodes[0], c)
         current += j
-    
-    current = current[::-1]
-    
+    n = len(current) % 8
+    current += ("0" * n)
     def bitstring_to_bytes(s):
         v = int(s, 2)
         b = bytearray()
         while v:
             b.append(v & 0xff)
             v >>= 8
-        return bytes(b[::-1])
-        
+        return b[::-1]
     S = bitstring_to_bytes(current)
+    S.append(ord(str(n)))
+    
     
     return S, nodes[0]
 
@@ -281,8 +281,8 @@ if __name__=='__main__':
     t = bwt(f)
     q = mtf(t)
     e, ring = encode(q)
-    # i = imtf(mtf(f))
-    # d = decode(e, ring)
+    i = imtf(mtf(f))
+    d = decode(e, ring)
 
 
 
