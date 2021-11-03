@@ -24,6 +24,48 @@ class node:
         self.right = right
 
         self.huff = ""
+    
+    def findHuff(self, cha):
+        currentNode = self
+        huff = ""
+
+        while(1):
+            if ((currentNode.left.symbol == cha)):
+                huff += str(currentNode.left.huff)
+                return huff
+            elif (currentNode.right.symbol == cha):
+                huff += str(currentNode.right.huff)
+                return huff
+            else:
+                currentNode = currentNode.left
+                huff += str(currentNode.huff)
+        
+    
+    def findSymbol(self, c):
+        i = 0
+        substring = c[i]
+        currentNode = self
+
+        if(self.right != None):
+            if(str(self.right.huff) == substring):
+                huff = str(self.right.huff)
+                return huff, self.right.symbol
+        
+        huff = str(self.left.huff)
+        
+        while (1):
+            if((substring == huff) & (currentNode.left.symbol != None)):
+                return huff, currentNode.left.symbol
+            if (currentNode.right != None):
+                r = huff[:-1]
+                r += "1"
+            if (substring == r):
+                return r, currentNode.right.symbol
+            else:
+                currentNode = currentNode.left
+                huff += str(currentNode.huff)
+                i += 1
+                substring += c[i]
 #Order is
 #BWT, MTF, Huff, Compress
 
@@ -37,18 +79,6 @@ def encode(msg):
     #find probability of each letter in msg
     #make huffman tree out of probability
     #then encode message in binary using huffman tree
-    def findHuff(currentNode, cha):
-        huff = ""
-        while(1):
-            if ((currentNode.left.symbol == cha)):
-                huff += str(currentNode.left.huff)
-                return huff
-            elif (currentNode.right.symbol == cha):
-                huff += str(currentNode.right.huff)
-                return huff
-            else:
-                currentNode = currentNode.left
-                huff += str(currentNode.huff)
 
 
     nodes = []
@@ -71,24 +101,12 @@ def encode(msg):
 
         nodes.append(newNode)
     
-    S = bytearray()
-    current = ""
+    S = ""
+
     for c in msg:
-        j = findHuff(nodes[0], c)
-        current += j
-    n = len(current) % 8
-    current += ("0" * n)
-    def bitstring_to_bytes(s):
-        v = int(s, 2)
-        b = bytearray()
-        while v:
-            b.append(v & 0xff)
-            v >>= 8
-        return b[::-1]
-    S = bitstring_to_bytes(current)
-    S.append(ord(str(n)))
+        S += nodes[0].findHuff(c)
     
-    
+    #S = bytearray(S.encode())
     return S, nodes[0]
 
 # This takes a string, cmsg, which must contain only 0s and 1s, and your 
@@ -99,38 +117,13 @@ def decode(cmsg, decoderRing):
 
     #keeps on looking in tree for code that works with current string, if none add length of search string by 1 and traverse down
     #huffman tree by 1. Once found remove serach string section from begining of string and start over
-    def findSymbol(currentNode, c):
-        i = 0
-        substring = c[i]
-
-        if(currentNode.right != None):
-            if(str(currentNode.right.huff) == substring):
-                huff = str(currentNode.right.huff)
-                return huff, currentNode.right.symbol
-        
-        huff = str(currentNode.left.huff)
-        
-        while (1):
-            if((substring == huff) & (currentNode.left.symbol != None)):
-                return huff, currentNode.left.symbol
-            if (currentNode.right != None):
-                r = huff[:-1]
-                r += "1"
-            if (substring == r):
-                return r, currentNode.right.symbol
-            else:
-                currentNode = currentNode.left
-                huff += str(currentNode.huff)
-                i += 1
-                substring += c[i]
-
     byteMsg = bytearray()
 
     if(type(cmsg) != type("")):
         cmsg.decode()
     while len(cmsg) != 0:
         
-        substring, byte = findSymbol(decoderRing, cmsg)
+        substring, byte = decoderRing.findSymbol(cmsg)
 
         byteMsg.append(byte)
         cmsg = cmsg[len(substring): ]
@@ -150,22 +143,6 @@ def compress(msg, useBWT):
 
     # Initializes an array to hold the compressed message.
     enc, huff = encode(msg)
-
-    enc_n = len(enc)
-    # n = 0
-    # while ((enc_n % 8) != 0):
-    #     enc_n += 1
-    #     n += 1
-    #     enc += "0"
-
-    # b = int(enc, 2)
-    # print(b%1000)
-    # b = b.to_bytes(enc_n // 8, "big")
-    # #print(b)
-    # b = iter(b)
-    # print(b)
-    # b = bytearray().extend(b)
-    # print(b)
     
     return enc, huff
 
@@ -276,13 +253,13 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    s = "hello"
-    f = bytearray(s.encode())
-    t = bwt(f)
-    q = mtf(t)
-    e, ring = encode(q)
-    i = imtf(mtf(f))
-    d = decode(e, ring)
+    # s = "hello"
+    # f = bytearray(s.encode())
+    # t = bwt(f)
+    # q = mtf(t)
+    # e, ring = encode(q)
+    # i = imtf(mtf(f))
+    # d = decode(e, ring)
 
 
 
