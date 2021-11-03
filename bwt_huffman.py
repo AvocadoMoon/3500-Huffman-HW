@@ -72,11 +72,22 @@ def encode(msg):
 
         nodes.append(newNode)
     
-    S = ""
-
+    current = ""
     for c in msg:
         j = findHuff(nodes[0], c)
-        S += j
+        current += j
+    
+    current = current[::-1]
+    
+    def bitstring_to_bytes(s):
+        v = int(s, 2)
+        b = bytearray()
+        while v:
+            b.append(v & 0xff)
+            v >>= 8
+        return bytes(b[::-1])
+        
+    S = bitstring_to_bytes(current)
     
     return S, nodes[0]
 
@@ -141,22 +152,22 @@ def compress(msg, useBWT):
     enc, huff = encode(msg)
 
     enc_n = len(enc)
-    n = 0
-    while ((enc_n % 8) != 0):
-        enc_n += 1
-        n += 1
-        enc += "0"
+    # n = 0
+    # while ((enc_n % 8) != 0):
+    #     enc_n += 1
+    #     n += 1
+    #     enc += "0"
 
-    b = int(enc, 2)
-    print(b%1000)
-    b = b.to_bytes(enc_n // 8, "big")
-    #print(b)
-    b = iter(b)
-    print(b)
-    b = bytearray().extend(b)
-    print(b)
+    # b = int(enc, 2)
+    # print(b%1000)
+    # b = b.to_bytes(enc_n // 8, "big")
+    # #print(b)
+    # b = iter(b)
+    # print(b)
+    # b = bytearray().extend(b)
+    # print(b)
     
-    return b, huff
+    return enc, huff
 
 # This takes a sequence of bytes over which you can iterate containing the Huffman-coded message, and the 
 # decoder ring needed to decompress it.  It returns the bytearray which is the decompressed message. 
@@ -270,8 +281,8 @@ if __name__=='__main__':
     t = bwt(f)
     q = mtf(t)
     e, ring = encode(q)
-    i = imtf(mtf(f))
-    d = decode(e, ring)
+    # i = imtf(mtf(f))
+    # d = decode(e, ring)
 
 
 
