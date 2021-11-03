@@ -26,19 +26,39 @@ class node:
         self.huff = ""
     
     def findHuff(self, cha):
-        currentNode = self
-        huff = ""
+        st = ""
+        if(self.symbol != cha):
+            if ((self.left != None) & (self.right != None)):
 
-        while(1):
-            if ((currentNode.left.symbol == cha)):
-                huff += str(currentNode.left.huff)
-                return huff
-            elif (currentNode.right.symbol == cha):
-                huff += str(currentNode.right.huff)
-                return huff
+                #if not none, go to left and right
+                l = self.left.findHuff(cha)
+                r = self.right.findHuff(cha)
+                if (l != None):
+                    st += str(l)
+                    st += str(self.huff)
+                    return st
+                elif(r != None):
+                    st += str(r)
+                    st += str(self.huff)
+                    return st
+            
+            #if right is not none
+            elif (self.right != None):
+                st += str(self.right.findHuff(cha))
+                st += str(self.huff)
+                return st
+            
+            #if left is not none
+            elif (self.left != None):
+                st += str(self.left.findHuff(cha))
+                st += str(self.huff)
+                return st
+
+            #else return none
             else:
-                currentNode = currentNode.left
-                huff += str(currentNode.huff)
+                return self.left
+        else:
+            return self.huff
         
     
     def findSymbol(self, c):
@@ -46,26 +66,41 @@ class node:
         substring = c[i]
         currentNode = self
 
-        if(self.right != None):
-            if(str(self.right.huff) == substring):
-                huff = str(self.right.huff)
-                return huff, self.right.symbol
-        
-        huff = str(self.left.huff)
-        
-        while (1):
-            if((substring == huff) & (currentNode.left.symbol != None)):
-                return huff, currentNode.left.symbol
-            if (currentNode.right != None):
-                r = huff[:-1]
-                r += "1"
-            if (substring == r):
-                return r, currentNode.right.symbol
-            else:
+        while(1):
+            if (substring[i] == "0"):
                 currentNode = currentNode.left
-                huff += str(currentNode.huff)
+                if (currentNode.symbol != None):
+                    return substring, currentNode.symbol
                 i += 1
                 substring += c[i]
+            else:
+                currentNode = currentNode.right
+                if (currentNode.symbol != None):
+                    return substring, currentNode.symbol
+                i += 1
+                substring += c[i]
+            
+
+        # if(self.right != None):
+        #     if(str(self.right.huff) == substring):
+        #         huff = str(self.right.huff)
+        #         return huff, self.right.symbol
+        
+        # huff = str(self.left.huff)
+        
+        # while (1):
+        #     if((substring == huff) & (currentNode.left.symbol != None)):
+        #         return huff, currentNode.left.symbol
+        #     if (currentNode.right != None):
+        #         r = huff[:-1]
+        #         r += "1"
+        #     if (substring == r):
+        #         return r, currentNode.right.symbol
+        #     else:
+        #         currentNode = currentNode.left
+        #         huff += str(currentNode.huff)
+        #         i += 1
+        #         substring += c[i]
 #Order is
 #BWT, MTF, Huff, Compress
 
@@ -86,18 +121,22 @@ def encode(msg):
         
         n = msg.count(c)
         if (n != 0):
+            print("n: {}, c: {}".format(n, c))
             nodes.append(node(n, c))
     
     while len(nodes) > 1:
         nodes = sorted(nodes, key= lambda x: x.freq)
 
-        left = nodes.pop()
-        right = nodes.pop()
+        right = nodes[0]
+        left = nodes[1]
 
         left.huff = 0
         right.huff = 1
 
         newNode = node(left.freq+right.freq, None, left, right)
+
+        nodes.remove(left)
+        nodes.remove(right)
 
         nodes.append(newNode)
     
@@ -106,6 +145,7 @@ def encode(msg):
     current = ""
     for c in msg:
         j = nodes[0].findHuff(c)
+        j = j[::-1]
         while(len(j) != 0):
             while(len(current) != byte_size and len(j) != 0):
                 current += j[0]
@@ -172,6 +212,8 @@ def decompress(msg, decoderRing, useBWT):
     print(n)
     S = S[: len(S) -8 -n]
     decompressedMsg = decode(S, decoderRing)
+
+    print("done")
     
     # before you return, you must invert the move-to-front and BWT if applicable
     # here, decompressed message should be the return value from decode()
@@ -191,6 +233,7 @@ def ibwt(msg):
     for j in range(len(msg)):
         #insert the BWT as the first column
         rotations = sorted([c+rotations[i] for i, c in enumerate(msg)])
+        print(j)
     #return the row ending in ‘$’
     s = termchar.to_bytes(1, byteorder='big').decode()
     msg = rotations[msg.index(s)]
@@ -274,13 +317,13 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    # s = "hello"
-    # f = bytearray(s.encode())
-    # t = bwt(f)
-    # q = mtf(t)
-    # e, ring = encode(q)
-    # i = imtf(mtf(f))
-    # d = decode(e, ring)
+    s = "sup"
+    f = bytearray(s.encode())
+    t = bwt(f)
+    q = mtf(t)
+    e, ring = compress(f, False)
+    i = imtf(mtf(f))
+    d = decompress(e, ring, False)
 
 
 
