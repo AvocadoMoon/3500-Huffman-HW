@@ -223,7 +223,7 @@ def decompress(msg, decoderRing, useBWT):
 
     return decompressedMsg
 
-# memory efficient iBWT
+# # memory efficient iBWT
 def ibwt(msg):
     # I would work with a bytearray to store the IBWT output
     i = msg.index(termchar)
@@ -317,13 +317,13 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    s = "sup"
+    s = "hello"
     f = bytearray(s.encode())
     t = bwt(f)
     q = mtf(t)
-    e, ring = compress(f, False)
+    e, ring = compress(f, True)
     i = imtf(mtf(f))
-    d = decompress(e, ring, False)
+    d = decompress(e, ring, True)
 
 
 
