@@ -226,13 +226,23 @@ def ibwt(msg):
     sort = sorted(msg)
     sort = "".join(sort)
     c = termchar.to_bytes(1, "big").decode() #character in BWT that is under inspection
-    term = c
     text = ""
+    left_sub = 0
+    right_sub = None
+    rank = 0
     for j in range(len(msg)):
-        i = sort.rfind(c)
+        if right_sub != None:
+            right_sub += 1
+        i = sort.find(c, left_sub + rank, right_sub)
+        text += sort[i]
         c = msg[i]
-        sort[i] = term
-        text += c
+        left_sub = sort.find(c)
+        right_sub = sort.rfind(c)
+        rank = msg.count(c, None, i)
+    text = text[::-1]
+    text = text[:len(text) - 1]
+    text = bytearray(text.encode())
+    return text
 
 
 
@@ -312,13 +322,13 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    s = "hello"
-    f = bytearray(s.encode())
-    t = bwt(f)
-    q = mtf(t)
-    e, ring = compress(f, True)
-    i = imtf(mtf(f))
-    d = decompress(e, ring, True)
+    # s = "hellos this message is about to"
+    # f = bytearray(s.encode())
+    # t = bwt(f)
+    # q = mtf(t)
+    # e, ring = compress(f, True)
+    # i = imtf(mtf(f))
+    # d = decompress(e, ring, True)
 
 
     t0 = time.time()
