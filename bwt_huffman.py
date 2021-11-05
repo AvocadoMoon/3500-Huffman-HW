@@ -100,7 +100,6 @@ def encode(msg):
         
         n = msg.count(c)
         if (n != 0):
-            print("n: {}, c: {}".format(n, c))
             nodes.append(node(n, c))
     
     while len(nodes) > 1:
@@ -203,24 +202,6 @@ def decompress(msg, decoderRing, useBWT):
     return decompressedMsg
 
 # # memory efficient iBWT
-# This version is highly inefficint
-# def ibwt(msg):
-#     # I would work with a bytearray to store the IBWT output
-#     i = msg.index(termchar)
-#     msg = msg.decode()
-
-#     rotations = ['' for c in msg]
-#     for j in range(len(msg)):
-#         #insert the BWT as the first column
-#         rotations = sorted([c+rotations[i] for i, c in enumerate(msg)])
-#         print(j)
-#     #return the row ending in ‘$’
-#     s = termchar.to_bytes(1, byteorder='big').decode()
-#     msg = rotations[msg.index(s)]
-#     msg = msg[:-1]
-#     msg = bytearray(msg.encode())
-#     return msg
-
 def ibwt(msg):
     msg = msg.decode()
     sort = sorted(msg)
@@ -322,15 +303,6 @@ def imtf(compressed_msg):
     return decompressed_img # Return original string
 
 if __name__=='__main__':
-    # s = "hellos this message is about to"
-    # f = bytearray(s.encode())
-    # t = bwt(f)
-    # q = mtf(t)
-    # e, ring = compress(f, True)
-    # i = imtf(mtf(f))
-    # d = decompress(e, ring, True)
-
-
     t0 = time.time()
     # argparse is an excellent library for parsing arguments to a python program
     parser = argparse.ArgumentParser(description='<Insert a cool name for your compression algorithm> compresses '
