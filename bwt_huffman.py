@@ -7,6 +7,7 @@ import math
 from operator import itemgetter
 from functools import partial
 from collections import Counter
+import time
 
 try:
     import cPickle as pickle
@@ -79,28 +80,6 @@ class node:
                     return substring, currentNode.symbol
                 i += 1
                 substring += c[i]
-            
-
-        # if(self.right != None):
-        #     if(str(self.right.huff) == substring):
-        #         huff = str(self.right.huff)
-        #         return huff, self.right.symbol
-        
-        # huff = str(self.left.huff)
-        
-        # while (1):
-        #     if((substring == huff) & (currentNode.left.symbol != None)):
-        #         return huff, currentNode.left.symbol
-        #     if (currentNode.right != None):
-        #         r = huff[:-1]
-        #         r += "1"
-        #     if (substring == r):
-        #         return r, currentNode.right.symbol
-        #     else:
-        #         currentNode = currentNode.left
-        #         huff += str(currentNode.huff)
-        #         i += 1
-        #         substring += c[i]
 #Order is
 #BWT, MTF, Huff, Compress
 
@@ -224,22 +203,38 @@ def decompress(msg, decoderRing, useBWT):
     return decompressedMsg
 
 # # memory efficient iBWT
-def ibwt(msg):
-    # I would work with a bytearray to store the IBWT output
-    i = msg.index(termchar)
-    msg = msg.decode()
+# This version is highly inefficint
+# def ibwt(msg):
+#     # I would work with a bytearray to store the IBWT output
+#     i = msg.index(termchar)
+#     msg = msg.decode()
 
-    rotations = ['' for c in msg]
+#     rotations = ['' for c in msg]
+#     for j in range(len(msg)):
+#         #insert the BWT as the first column
+#         rotations = sorted([c+rotations[i] for i, c in enumerate(msg)])
+#         print(j)
+#     #return the row ending in ‘$’
+#     s = termchar.to_bytes(1, byteorder='big').decode()
+#     msg = rotations[msg.index(s)]
+#     msg = msg[:-1]
+#     msg = bytearray(msg.encode())
+#     return msg
+
+def ibwt(msg):
+    msg = msg.decode()
+    sort = sorted(msg)
+    sort = "".join(sort)
+    c = termchar.to_bytes(1, "big").decode() #character in BWT that is under inspection
+    term = c
+    text = ""
     for j in range(len(msg)):
-        #insert the BWT as the first column
-        rotations = sorted([c+rotations[i] for i, c in enumerate(msg)])
-        print(j)
-    #return the row ending in ‘$’
-    s = termchar.to_bytes(1, byteorder='big').decode()
-    msg = rotations[msg.index(s)]
-    msg = msg[:-1]
-    msg = bytearray(msg.encode())
-    return msg
+        i = sort.rfind(c)
+        c = msg[i]
+        sort[i] = term
+        text += c
+
+
 
 # Burrows-Wheeler Transform fncs
 def radix_sort(values, key, step=0):
@@ -326,7 +321,7 @@ if __name__=='__main__':
     d = decompress(e, ring, True)
 
 
-
+    t0 = time.time()
     # argparse is an excellent library for parsing arguments to a python program
     parser = argparse.ArgumentParser(description='<Insert a cool name for your compression algorithm> compresses '
                                                  'binary and plain text files using the Burrows-Wheeler transform, '
@@ -365,12 +360,16 @@ if __name__=='__main__':
             fcompressed = open(outfile, 'wb')
             marshal.dump((pickle.dumps(tree), msg), fcompressed)
             fcompressed.close()
+            t1 = time.time()
+            print(t1 - t0)
         else:
             msg, tree = encode(sinput)
             print(msg)
             fcompressed = open(outfile, 'wb')
             marshal.dump((pickle.dumps(tree), msg), fcompressed)
             fcompressed.close()
+            t1 = time.time()
+            print(t1 - t0)
     else:
         fp = open(infile, 'rb')
         pck, msg = marshal.load(fp)
@@ -384,3 +383,5 @@ if __name__=='__main__':
         fp = open(outfile, 'wb')
         fp.write(sinput)
         fp.close()
+        t1 = time.time()
+        print(t1 - t0)
